@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Basic Three.js App</title>
+  </head>
+  <body>
+    <script src="js/three.min.js"></script>
+      <script src="js/MorphAnimMesh.js"></script>
+    <script src="js/dat.gui.min.js"></script> 
+    <script>
+    var scene, camera, renderer;
+ var clock = new THREE.Clock();
+ var mesh;
+        var meshAnim;
+        var frames = [];
+        var currentMesh;
+	init();
+	function init()
+	{
+		var WIDTH = window.innerWidth,HEIGHT = window.innerHeight;
+		scene = new THREE.Scene();
+		camera = new THREE.PerspectiveCamera(90,WIDTH/HEIGHT, 0.1, 1000 );
+		camera.position.set(0,0,0);
+		scene.add(camera);
+		renderer = new THREE.WebGLRenderer();
+		renderer.setSize(WIDTH,HEIGHT);
+		document.body.appendChild(renderer.domElement);
+ 		        
+ 		// call the render function
+        var step = 0;
+
+
+        // setup the control gui
+        var controls = new function () {
+            this.keyframe = 0;
+        }
+
+        var gui = new dat.GUI();
+        gui.add(controls, "keyframe", 0, 15).step(1).onChange(function (e) {
+            showFrame(e);
+        });
+        
+       
+
+        var loader = new THREE.JSONLoader();
+        loader.load('models/horse.js', function (geometry, mat) {
+
+            var mat = new THREE.MeshLambertMaterial(
+                    {color: 0xffffff, morphNormals: false,
+                        morphTargets: true,
+                        vertexColors: THREE.FaceColors});
+
+
+            var mat2 = new THREE.MeshLambertMaterial(
+                    {color: 0xffffff, vertexColors: THREE.FaceColors});
+
+            mesh = new THREE.Mesh(geometry, mat);
+            mesh.position.x = -100;
+            frames.push(mesh);
+            currentMesh = mesh;
+            morphColorsToFaceColors(geometry);
+
+            mesh.geometry.morphTargets.forEach(function (e) {
+                var geom = new THREE.Geometry();
+                geom.vertices = e.vertices;
+                geom.faces = geometry.faces;
+
+
+                var morpMesh = new THREE.Mesh(geom, mat2);
+                frames.push(morpMesh);
+                morpMesh.position.x = -100;
+
+            });
+
+            geometry.computeVertexNormals();
+            geometry.computeFaceNormals();
+            geometry.computeMorphNormals();
+
+           // console.log(geometry);
+
+            meshAnim = new THREE.MorphAnimMesh(geometry, mat);
+            meshAnim.duration = 1000;
+            meshAnim.position.x = 200;
+            meshAnim.position.z = 0;
+
+            scene.add(meshAnim);
+
+            showFrame(0);
+
+        }, '../models');
+
+
+
+    	// Create a light, set its position, and add it to the scene.
+    	var light = new THREE.PointLight(0xFFFFFF);
+    	light.position.set(5,5,100);
+    	scene.add(light);
+
+ 		function showFrame(e) {
+            scene.remove(currentMesh);
+            scene.add(frames[e]);
+            currentMesh = frames[e];
+           // console.log(currentMesh);
+        }
+
+        function morphColorsToFaceColors(geometry) {
+
+            if (geometry.morphColors && geometry.morphColors.length) {
+
+                var colorMap = geometry.morphColors[ 0 ];
+                for (var i = 0; i < colorMap.colors.length; i++) {
+                    geometry.faces[ i ].color = colorMap.colors[ i ];
+                    geometry.faces[ i ].color.offsetHSL(0, 0.3, 0);
+                }
+            }
+
+	}
+}
+	render();
+    function render() {
+        var delta = clock.getDelta();
+        renderer.clear();
+        if (meshAnim) {
+                meshAnim.updateAnimation(delta * 1000);
+                meshAnim.rotation.y += 0.01;
+        }
+        // render using requestAnimationFrame
+
+
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+     }
+    </script>
+  </body>
+</html>
