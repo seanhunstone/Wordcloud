@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	
+	<title>Speech to text converter</title>
+	<style type="text/css">
+
+	body{
+		font-family: verdana;
+	}
+
+	#result {
+		height: 200px;
+		border: 1px solid #ccc;
+		padding: 10px;
+		box-shadow: 0 0 10px 0 #bbb;
+		margin-bottom: 30px;
+		font-size: 14px;
+		line-height: 25px; 
+	}
+
+	button {
+		font-size: 20px;
+		position: absolute;
+		top: 240px;
+		left: 50%;
+	}
+
+
+</style>
+</head>
+<body>
+	<script type="text/javascript" src="newbundle.js"></script>
+	<h4 align="center">Speech to text converter</h4>
+	<div id="result"></div>
+	<button onclick="startConverting();">Start</i></button>
+	<script type="text/javascript">
+		var r = document.getElementById('result');
+
+		function startConverting() {
+
+			//checks if browswer supports speech Recognition
+			if('webkitSpeechRecognition' in window) {
+				var speechRecognizer = new webkitSpeechRecognition();
+				speechRecognizer.continuous = true;
+				speechRecognizer.interimResults = true;
+				speechRecognizer.lang = 'en-GB';
+				speechRecognizer.start();
+
+				var finalTranscripts = '';
+		//displays final speech to text
+		speechRecognizer.onresult = function(event){
+			var interimTranscripts = '';
+			for(var i = event.resultIndex; i < event.results.length; i++){
+				var transcript = event.results[i][0].transcript;
+				transcript.replace("\n", "<br>");
+				//tells us if transcript is final or not
+				if(event.results[i].isFinal){
+					finalTranscripts += transcript;
+
+					function wordFreq(string) {
+						var words = string.replace(/[.]/g, '').split(/\s/);
+						var freqMap = {};
+						
+						words.forEach(function(w) {
+							
+							if (!freqMap[w]) {
+								freqMap[w] = 0;
+							}
+							freqMap[w] += 1;
+						});
+						
+						return freqMap;
+					}
+
+					var freq = wordFreq(finalTranscripts);
+                    var word_database = [];
+					Object.keys(freq).sort().forEach(function(word) {
+						console.log("count of " + word + " is " + freq[word]);
+                        
+                    
+									word_database.push({text:word,size:freq[word]}); 
+					});
+						console.log(word_database);
+
+					d3.wordcloud()
+       			 .size([500, 300])
+        			.fill(d3.scale.ordinal().range(["#884400", "#448800", "#888800", "#444400"]))
+        		.words(word_database)
+        		.onwordclick(function(d, i) {
+         		 if (d.href) { window.location = d.href; }
+        		})
+        		.start();			
+
+
+					
+				} else {
+					interimTranscripts += transcript;
+				}
+			}
+			r.innerHTML = finalTranscripts + '<span style="color:#999">' + interimTranscripts + '</span>';
+		};
+		speechRecognizer.onerror = function(event){
+
+		};
+	}
+	else {
+
+		r.innerHTML = 'Your browser is not supported. If using google chrome, please upgrade';
+
+	}
+
+}
+
+
+ 
+
+
+
+
+
+</script>
+
+<div id='wordcloud'></div>
+
+<script>
+      
+    </script>
+
+
+</body>
+</html>
