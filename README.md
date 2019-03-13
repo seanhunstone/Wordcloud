@@ -1,4 +1,5 @@
 # Node.js
+ To use this file, simply download it and open cmd.exe. Once opened type http-server into the command line and then open the speechToTextConverter1.html file in google chrome. Click allow to any pop up asking for permission for microphone access. Once this is complete the application should then work. 
 
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/nodejs/node?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/29/badge)](https://bestpractices.coreinfrastructure.org/projects/29)
 
